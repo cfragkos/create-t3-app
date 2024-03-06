@@ -8,6 +8,12 @@ export const dependencyVersionMap = {
   "@auth/prisma-adapter": "^1.4.0",
   "@auth/drizzle-adapter": "^0.7.0",
 
+  // Lucia
+  lucia: "^3.0.1",
+  "@lucia-auth/adapter-prisma": "^4.0.0",
+  "@lucia-auth/adapter-drizzle": "^1.0.2",
+  oslo: "^1.1.3",
+
   // Prisma
   prisma: "^5.10.2",
   "@prisma/client": "^5.10.2",

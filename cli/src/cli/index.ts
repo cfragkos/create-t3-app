@@ -34,6 +34,8 @@ interface CliFlags {
   /** @internal Used in CI. */
   nextAuth: boolean;
   /** @internal Used in CI. */
+  lucia: boolean;
+  /** @internal Used in CI. */
   appRouter: boolean;
 }
 
@@ -46,7 +48,7 @@ interface CliResults {
 
 const defaultOptions: CliResults = {
   appName: DEFAULT_APP_NAME,
-  packages: ["nextAuth", "prisma", "tailwind", "trpc"],
+  packages: ["nextAuth", "lucia", "prisma", "tailwind", "trpc"],
   flags: {
     noGit: false,
     noInstall: false,
@@ -57,6 +59,7 @@ const defaultOptions: CliResults = {
     prisma: false,
     drizzle: false,
     nextAuth: false,
+    lucia: false,
     importAlias: "~/",
     appRouter: false,
   },
@@ -104,6 +107,11 @@ export const runCli = async (): Promise<CliResults> => {
     .option(
       "--nextAuth [boolean]",
       "Experimental: Boolean value if we should install NextAuth.js. Must be used in conjunction with `--CI`.",
+      (value) => !!value && value !== "false"
+    ) /** @experimental Used for CI E2E tests. Used in conjunction with `--CI` to skip prompting. */
+    .option(
+      "--lucia [boolean]",
+      "Experimental: Boolean value if we should install lucia. Must be used in conjunction with `--CI`.",
       (value) => !!value && value !== "false"
     )
     /** @experimental - Used for CI E2E tests. Used in conjunction with `--CI` to skip prompting. */
@@ -180,6 +188,7 @@ export const runCli = async (): Promise<CliResults> => {
     if (cliResults.flags.prisma) cliResults.packages.push("prisma");
     if (cliResults.flags.drizzle) cliResults.packages.push("drizzle");
     if (cliResults.flags.nextAuth) cliResults.packages.push("nextAuth");
+    if (cliResults.flags.lucia) cliResults.packages.push("lucia");
 
     if (cliResults.flags.prisma && cliResults.flags.drizzle) {
       // We test a matrix of all possible combination of packages in CI. Checking for impossible
@@ -248,11 +257,28 @@ export const runCli = async (): Promise<CliResults> => {
             message: "Would you like to use tRPC?",
           });
         },
-        authentication: () => {
+        authentication: ({ results }) => {
+          if (results.database === "none")
+            return p.select({
+              message: "What authentication provider would you like to use?",
+              options: [
+                { value: "none", label: "None" },
+                {
+                  value: "lucia",
+                  label: "lucia",
+                  hint: "lucia requires a database provider",
+                },
+                { value: "next-auth", label: "NextAuth.js" },
+                // Maybe later
+                // { value: "clerk", label: "Clerk" },
+              ],
+              initialValue: "none",
+            });
           return p.select({
             message: "What authentication provider would you like to use?",
             options: [
               { value: "none", label: "None" },
+              { value: "lucia", label: "lucia" },
               { value: "next-auth", label: "NextAuth.js" },
               // Maybe later
               // { value: "clerk", label: "Clerk" },
@@ -331,6 +357,7 @@ export const runCli = async (): Promise<CliResults> => {
     if (project.styling) packages.push("tailwind");
     if (project.trpc) packages.push("trpc");
     if (project.authentication === "next-auth") packages.push("nextAuth");
+    if (project.authentication === "lucia") packages.push("lucia");
     if (project.database === "prisma") packages.push("prisma");
     if (project.database === "drizzle") packages.push("drizzle");
 

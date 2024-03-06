@@ -1,4 +1,5 @@
 import { envVariablesInstaller } from "~/installers/envVars.js";
+import { luciaInstaller } from "~/installers/lucia.js";
 import { nextAuthInstaller } from "~/installers/nextAuth.js";
 import { prismaInstaller } from "~/installers/prisma.js";
 import { tailwindInstaller } from "~/installers/tailwind.js";
@@ -17,6 +18,7 @@ export const availablePackages = [
   "trpc",
   "envVariables",
   "dbContainer",
+  "lucia",
 ] as const;
 export type AvailablePackages = (typeof availablePackages)[number];
 
@@ -55,6 +57,10 @@ export const buildPkgInstallerMap = (
   nextAuth: {
     inUse: packages.includes("nextAuth"),
     installer: nextAuthInstaller,
+  },
+  lucia: {
+    inUse: packages.includes("lucia"),
+    installer: luciaInstaller,
   },
   prisma: {
     inUse: packages.includes("prisma"),
